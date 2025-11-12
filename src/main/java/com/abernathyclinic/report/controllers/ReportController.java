@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 public class ReportController {
 	
 	@GetMapping("/api/report/{uuid}")
-	public Mono<ReportDto> getTestReport(@PathVariable String patientUuid) {
+	public Mono<ReportDto> getTestReport(@PathVariable("uuid") String patientUuid) {
 		return Mono.just(new ReportDto(patientUuid, RiskLevel.NONE.toString()));
 	}
 }
