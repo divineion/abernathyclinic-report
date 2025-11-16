@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import com.abernathyclinic.report.constants.RiskKeywords;
 import com.abernathyclinic.report.constants.RiskLevel;
-import com.abernathyclinic.report.dto.NoteContent;
+import com.abernathyclinic.report.dto.NoteContentDto;
 import com.abernathyclinic.report.dto.PatientProfile;
 import com.abernathyclinic.report.dto.ReportDto;
 
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 public class ReportService {
 
 	// compter le nombre de mots-clés par note
-	private Integer countKeyWords(NoteContent note) {
+	private Integer countKeyWords(NoteContentDto note) {
 
 		// TODO reactive
 		int keyWordsCount = 0;
@@ -90,7 +90,7 @@ public class ReportService {
 		return RiskLevel.NONE;
 	}
 
-	public Mono<ReportDto> generateReport(Mono<PatientProfile> patient, Flux<NoteContent> notes) {
+	public Mono<ReportDto> generateReport(Mono<PatientProfile> patient, Flux<NoteContentDto> notes) {
 		// transformer chaque note en un nombre de mots-clés détectés
 		// faire la somme des mots clés détectés
 

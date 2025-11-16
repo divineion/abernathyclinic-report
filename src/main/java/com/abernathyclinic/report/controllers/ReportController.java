@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.abernathyclinic.report.dto.NoteContent;
+import com.abernathyclinic.report.dto.NoteContentDto;
 import com.abernathyclinic.report.dto.PatientProfile;
 import com.abernathyclinic.report.dto.ReportDto;
 import com.abernathyclinic.report.services.ReportService;
@@ -38,11 +38,11 @@ public class ReportController {
 				.retrieve()
 				.bodyToMono(PatientProfile.class);
 		
-		Flux<NoteContent> notes = webClient.get()
+		Flux<NoteContentDto> notes = webClient.get()
 				.uri("http://localhost:8080/notes/" + patientUuid + "/report-info")
 				.header("Authorization", authorization)
 				.retrieve()
-				.bodyToFlux(NoteContent.class);
+				.bodyToFlux(NoteContentDto.class);
 		
 		 return noteService.generateReport(patient, notes);
 		 
