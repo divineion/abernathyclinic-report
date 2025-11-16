@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.abernathyclinic.report.constants.RiskKeywords;
 import com.abernathyclinic.report.constants.RiskLevel;
 import com.abernathyclinic.report.dto.NoteContentDto;
-import com.abernathyclinic.report.dto.PatientProfile;
+import com.abernathyclinic.report.dto.PatientProfileDto;
 import com.abernathyclinic.report.dto.ReportDto;
 
 import reactor.core.publisher.Flux;
@@ -37,14 +37,14 @@ public class ReportService {
 		return keyWordsCount;
 	}
 
-	private int calculateAge(PatientProfile patient) {
+	private int calculateAge(PatientProfileDto patient) {
 		LocalDate now = LocalDate.now();
 		LocalDate birthdate = LocalDate.parse(patient.birthDate());
 
 		return Period.between(birthdate, now).getYears();
 	}
 
-	private RiskLevel computeRiskLevel(Integer totalCount, PatientProfile patient) {
+	private RiskLevel computeRiskLevel(Integer totalCount, PatientProfileDto patient) {
 				
 		// EARLY ONSET 
 		// dépend de l'âge et du sexe
@@ -90,7 +90,7 @@ public class ReportService {
 		return RiskLevel.NONE;
 	}
 
-	public Mono<ReportDto> generateReport(Mono<PatientProfile> patient, Flux<NoteContentDto> notes) {
+	public Mono<ReportDto> generateReport(Mono<PatientProfileDto> patient, Flux<NoteContentDto> notes) {
 		// transformer chaque note en un nombre de mots-clés détectés
 		// faire la somme des mots clés détectés
 
