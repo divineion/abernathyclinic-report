@@ -23,7 +23,10 @@ public class ReportServiceTest {
 // https://www.baeldung.com/java-clock
 	
 	@InjectMocks
-	ReportService service;
+	private ReportService service;
+	
+	@Mock
+	private KeyWordsReader keywordsReader;
 		
 	@Mock 
 	TimeService timeService;
@@ -41,6 +44,8 @@ public class ReportServiceTest {
 				"Le patient déclare qu'il 'se sent très bien' Poids égal ou inférieur au poids recommandé"));
 		
 		when(timeService.calculateAge(any(String.class))).thenReturn(58);
+		Flux<String> mockKeywords = Flux.empty();
+		when(keywordsReader.keyWords()).thenReturn(mockKeywords);
 		
 		// Act
 		Mono<String> report = service.generateReport(patientInfos, note)
