@@ -28,9 +28,9 @@ public class TimeService {
 	 * @param patient a {@link PatientProfileDto}
 	 * @return int the patient age in years
 	 */
-	public int calculateAge(PatientProfileDto patient) {
+	public int calculateAge(String birthDate) {
 		LocalDate now = LocalDate.now(clock);
-		LocalDate birthdate = LocalDate.parse(patient.birthDate());
+		LocalDate birthdate = LocalDate.parse(birthDate);
 
 		return Period.between(birthdate, now).getYears();
 	}
