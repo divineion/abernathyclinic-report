@@ -1,7 +1,5 @@
 package com.abernathyclinic.report.services;
 
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +15,12 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class ReportService {
+	
+	private final TimeService timeService;
+	
+	public ReportService(TimeService timeService) {
+		this.timeService = timeService;
+	}
 
 	// compter le nombre de mots-clés par note
 	private Integer countKeyWords(NoteContentDto note) {
@@ -37,31 +41,24 @@ public class ReportService {
 		return keyWordsCount;
 	}
 
-	private int calculateAge(PatientProfileDto patient) {
-		LocalDate now = LocalDate.now();
-		LocalDate birthdate = LocalDate.parse(patient.birthDate());
-
-		return Period.between(birthdate, now).getYears();
-	}
-
 	private RiskLevel computeRiskLevel(Integer totalCount, PatientProfileDto patient) {
 				
 		// EARLY ONSET 
 		// dépend de l'âge et du sexe
 		// Si le patient a plus de 30 ans, alors il en faudra huit ou plus
-		if (totalCount >= 8 && calculateAge(patient) >= 30) {
+		if (totalCount >= 8 && timeService.calculateAge(patient) >= 30) {
 			return RiskLevel.EARLY_ONSET;
 		}
 
 		//// Si le patient est une femme et a moins de 30 ans, il faudra au moins
 //		sept termes déclencheurs. 		
-		if (patient.gender().equalsIgnoreCase("F") && totalCount >= 7 && calculateAge(patient) < 30) {
+		if (patient.gender().equalsIgnoreCase("F") && totalCount >= 7 && timeService.calculateAge(patient) < 30) {
 			return RiskLevel.EARLY_ONSET;
 		}
 
 //		le patient est un homme de moins de 30 ans, alors au moins cinq termes déclencheurs
 //		sont nécessaires.
-		if (patient.gender().equalsIgnoreCase("M") && calculateAge(patient) < 30 && totalCount >= 5) {
+		if (patient.gender().equalsIgnoreCase("M") && timeService.calculateAge(patient) < 30 && totalCount >= 5) {
 			return RiskLevel.EARLY_ONSET;
 		}
 
@@ -69,19 +66,19 @@ public class ReportService {
 		// Si le patient est une femme et a moins de 30 ans, il faudra quatre termes déclencheurs.
 		// Si le patient a plus de 30 ans, alors il en faudra six ou sept 
 		if (patient.gender().equalsIgnoreCase("F") && 
-				((calculateAge(patient) < 30 &&totalCount >= 4) 
-				|| (calculateAge(patient) >= 30 && totalCount >= 7 ))) {
+				((timeService.calculateAge(patient) < 30 &&totalCount >= 4) 
+				|| (timeService.calculateAge(patient) >= 30 && totalCount >= 7 ))) {
 			return RiskLevel.IN_DANGER;
 		}
 
 		if (patient.gender().equalsIgnoreCase("M") && 
-				((calculateAge(patient) < 30 && totalCount >= 3)
-				|| (calculateAge(patient) >= 30 && totalCount >= 6))) {
+				((timeService.calculateAge(patient) < 30 && totalCount >= 3)
+				|| (timeService.calculateAge(patient) >= 30 && totalCount >= 6))) {
 			return RiskLevel.IN_DANGER;
 		}
 		
 		// BORDERLINE
-		if (totalCount >= 2 && totalCount <= 5 && calculateAge(patient) > 30) {
+		if (totalCount >= 2 && totalCount <= 5 && timeService.calculateAge(patient) > 30) {
 			return RiskLevel.BORDERLINE;
 		}
 
@@ -103,5 +100,4 @@ public class ReportService {
 					.map(riskLevel -> new ReportDto(riskLevel.name()))// construire le dto Mono<RiskLevel>
 			);
 	}
-
 }
