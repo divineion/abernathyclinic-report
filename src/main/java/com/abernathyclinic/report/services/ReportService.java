@@ -1,10 +1,6 @@
 package com.abernathyclinic.report.services;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.stereotype.Service;
-import com.abernathyclinic.report.constants.RiskKeywords;
 import com.abernathyclinic.report.constants.RiskLevel;
 import com.abernathyclinic.report.dto.NoteContentDto;
 import com.abernathyclinic.report.dto.PatientProfileDto;
@@ -17,29 +13,21 @@ import reactor.core.publisher.Mono;
 public class ReportService {
 	
 	private final TimeService timeService;
+
+	private final KeyWordsReader keywordsReader;
 	
-	public ReportService(TimeService timeService) {
+	public ReportService(KeyWordsReader keywordsReader, TimeService timeService) {
 		this.timeService = timeService;
+		this.keywordsReader = keywordsReader;
 	}
 
-	// compter le nombre de mots-clés par note
-	private Integer countKeyWords(NoteContentDto note) {
-
-		// TODO reactive
-		int keyWordsCount = 0;
-		List<String> words = new ArrayList<>();
-
-		for (String keyword : RiskKeywords.KEYWORDS) {
-			if (note.content().toLowerCase().trim().contains(keyword.toLowerCase().trim())) {
-				if (!words.contains(keyword.toLowerCase())) {
-					words.add(keyword);
-					keyWordsCount++;
-				}
-			}
-		}
-
-		return keyWordsCount;
-	}
+	// compter le nombre de mots-clés par note		
+	private Mono<Integer> countKeyWords(NoteContentDto note) {
+		return keywordsReader.keyWords()
+	    	.filter(keyword -> note.content().toLowerCase().contains(keyword.toLowerCase()))
+	    	.count()
+	    	.map(count -> Math.toIntExact(count));
+    }
 
 	private RiskLevel computeRiskLevel(Integer totalCount, PatientProfileDto patient) {
 				
@@ -92,11 +80,13 @@ public class ReportService {
 		// faire la somme des mots clés détectés
 
 		return patient
-			.flatMap(p -> 
+				// transformer chaque élément en un autre Flux
+				// là on a un Mono de patientProfile et flatMap() va créer un flux de Note
+			.flatMap(profile -> 
 				notes
-					.map(note -> countKeyWords(note)) // chque Flux de note devient un Flux<Integer>
-					.reduce(0, Integer::sum) // convertir en Mono<Integer> en appliquant la somme
-					.map(totalCount -> computeRiskLevel(totalCount, p)) // convertir en RiskLevel
+					.flatMap(note -> countKeyWords(note)) // transforme le Flux de notes qui devient un Flux<Integer>
+					.reduce(0, Integer::sum) // convertir en Mono<Integer> en faisant la somme des décomptes
+					.map(totalCount -> computeRiskLevel(totalCount, profile)) // convertir en RiskLevel en appliquant le calcul
 					.map(riskLevel -> new ReportDto(riskLevel.name()))// construire le dto Mono<RiskLevel>
 			);
 	}
