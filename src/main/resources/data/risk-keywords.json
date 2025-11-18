@@ -1,9 +1,5 @@
-package com.abernathyclinic.report.constants;
-
-import java.util.Set;
-
-public class RiskKeywords {
-	public final static Set<String> KEYWORDS = Set.of(
+{
+	"keywords": [
 		"Hémoglobine A1C",
 		"Microalbumine",
 		"Taille",
@@ -16,5 +12,5 @@ public class RiskKeywords {
 		"Rechute",
 		"Réaction",
 		"Anticorps"
-	);
+	]
 }
