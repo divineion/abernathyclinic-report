@@ -1,5 +1,6 @@
 package com.abernathyclinic.report.controllers;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -27,19 +28,25 @@ public class ReportController {
         this.noteService = noteService;
     }
     
+    @Value("${patient.service.url}")
+    private String patientServiceUrl;
+    
+    @Value("${notes.service.url}")
+    private String notesServiceUrl;
+    
 	@GetMapping("/api/report/{uuid}")
 	public Mono<ReportDto> getPatientReport(
 		@RequestHeader("Authorization") String authorization, 
 		@PathVariable("uuid") String patientUuid) {
 					
 		Mono<PatientProfileDto> patient = webClient.get()
-				.uri("http://localhost:8080/patient/"+patientUuid + "/report-info")
+				.uri(patientServiceUrl + patientUuid + "/report-info")
 				.header("Authorization", authorization)
 				.retrieve()
 				.bodyToMono(PatientProfileDto.class);
 		
 		Flux<NoteContentDto> notes = webClient.get()
-				.uri("http://localhost:8080/notes/" + patientUuid + "/report-info")
+				.uri(notesServiceUrl + patientUuid + "/report-info")
 				.header("Authorization", authorization)
 				.retrieve()
 				.bodyToFlux(NoteContentDto.class);
