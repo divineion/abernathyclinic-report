@@ -1,7 +1,5 @@
 package com.abernathyclinic.report.services;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Set;
 
@@ -22,8 +20,6 @@ public class KeyWordsReader {
         this.mapper = mapper;
     }
 
-    private final File dataFilePath = new File("src/main/resources/data/risk-keywords.json");
-
     private Flux<String> keyWords;
 
     private static class KeywordsData {
@@ -32,7 +28,15 @@ public class KeyWordsReader {
 
     @PostConstruct
     public void readData() {
-        try (InputStream inputStream = new FileInputStream(dataFilePath)) {
+    	// https://www.baeldung.com/java-getresourceasstream-vs-fileinputstream
+    	// This method is commonly used to read configuration files, properties files, and other resources packaged with the application.
+    	// fonctionne en dev comme dans un JAR
+        try (InputStream inputStream = getClass().getResourceAsStream("/data/risk-keywords.json")) {
+        	
+        	if (inputStream == null) {
+                throw new RuntimeException("File not found in classpath: /data/risk-keywords.json");
+            }
+        	
             KeywordsData data = mapper.readValue(inputStream, KeywordsData.class);
             keyWords = Flux.fromIterable(data.keywords); 
         } catch (Exception e) {
