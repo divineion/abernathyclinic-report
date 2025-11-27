@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.7</version>
+		<version>3.5.8</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.abernathyclinic</groupId>
@@ -45,6 +45,16 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.wiremock.integrations/wiremock-spring-boot
+		mcocker les micro-services -->
+		<dependency>
+		    <groupId>org.wiremock.integrations</groupId>
+		    <artifactId>wiremock-spring-boot</artifactId>
+		    <version>4.0.8</version>
+		    <scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
