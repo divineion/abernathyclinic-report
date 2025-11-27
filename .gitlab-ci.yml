@@ -44,10 +44,12 @@ test-job:
 package-job:
   stage: package
   script:
-    - mvn package -DskipTests \
+    - mvn --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true \ 
+      package -DskipTests \
       -Dhttps.protocols=TLSv1.2 \
       -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository \
-      --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true
+      package
+      
   artifacts:
     paths:
       - target/*.jar
