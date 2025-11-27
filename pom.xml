@@ -63,6 +63,22 @@
 			<plugin>
 	            <groupId>org.apache.maven.plugins</groupId>
 	            <artifactId>maven-failsafe-plugin</artifactId>
+	            <!-- Configurer Failsafe pour qu’il exécute uniquement les *IT.java -->
+	            <configuration>
+			        <includes>
+			            <include>**/*IT.java</include>
+			        </includes>
+			    </configuration>
+			    <executions>
+			        <execution>
+			            <id>integration-tests</id>
+			            <goals>
+			                <goal>integration-test</goal>
+			                <goal>verify</goal>
+			            </goals>
+			        </execution>
+			    </executions>
+	            
 	            <dependencies>
 	                <dependency>
 	                    <groupId>org.junit.jupiter</groupId>
@@ -74,6 +90,11 @@
 			
 			<plugin>
 			    <artifactId>maven-surefire-plugin</artifactId>
+			    <configuration>
+			        <excludes>
+			            <exclude>**/*IT.java</exclude>
+			        </excludes>
+			    </configuration>
 			</plugin>
 		
 			<plugin>
