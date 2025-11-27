@@ -1,0 +1,72 @@
+image: maven:3.9.10-eclipse-temurin-24
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository" # absolute path to local repository, will be used to installe xternal libs
+  MICROSERVICE_PATIENT_URL: http://mock-patient-service:8080/patient/
+  MICROSERVICE_NOTES_URL: http://mock-notes-service:8080/notes/
+
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+  - package
+  - image
+
+cache:            # jobs that use the same cache don’t have to download the files again
+  paths:
+    - .m2/repository
+  key: "$CI_COMMIT_REF_SLUG" # all commits from the same branch will share the cache
+
+# installe les dépendances et compile le code
+build-job:
+  stage: build
+  script:
+      - |
+        mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository \
+        -Dspring.profiles.active=test \
+        -Dpatient.service.url=http://mock-patient-service:8080/patient/ \
+        -Dnotes.service.url=http://mock-notes-service:8080/notes/ \
+        compile \
+        --batch-mode --errors --fail-at-end --show-version
+# validation du fonctionnement de l'image Docker
+# Pipeline CI/CD complet = 2 niveaux de tests 
+# Niveau 1 – mvn test dans Docker : Vérifie l'indépendance de l'environnement de build 
+# mvn test dans Docker sert surtout à vérifier que le projet ne dépend pas 
+# d'un jdk installé sur la machine, d'un maven local, d'une configuration locale...
+# pour garantir la reproductibilité et l’isolation
+# tests unitaires
+# vérifie que tous les tests s'exécutent avec succès
+test-job:
+  stage: test
+  script:
+    - mvn test
+
+# -DskipTests pour ne pas rejouer les tests déjà passés à l'étape d'avant
+package-job:
+  stage: package
+  script:
+    - mvn -DskipTests -Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true package
+      
+  artifacts:
+    paths:
+      - target/*.jar
+    name: "microservice-report-jar-artifacts"
+
+
+# URL bidons juste pr valider que le container démarre
+# sans dépendre des autres microservices
+image-job:  
+  stage: image
+  image: docker:latest
+# pointer vers le daemon Docker dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  services:
+  - docker:dind
+  dependencies:
+    - package-job
+  before_script: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  script:   
+    - docker build -t divineion/microservice-report:$CI_COMMIT_REF_SLUG .
+    - docker push divineion/microservice-report:$CI_COMMIT_REF_SLUG
+
