@@ -21,19 +21,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import java.util.UUID;
 
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) //démarre un serveur web réel sur un port aléatoire
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) 
 public class ReportControllerIT {
-// vérifier que le contrôleur appelle bien le microservice Patient
-// vérifier que le contrôleur appelle bien le microservice Notes
-
-// prend l'objet Java
-// le transforme en JSON
-// envoie une requête HTTP
-// Spring Webflux reçoit le JSON et le transforme en Publisher
-// le contrôleur s'abonne à ce flux, récupère l'objet et appelle le service
-// puis le contrôleur retourne un Mono<ReportDto>
 	@Autowired
-	WebTestClient webTestClient; //WebTestClient injecté automatiquement est lié au serveur web démarré par spring
+	WebTestClient webTestClient; 
 	
 	@Autowired
 	ReportController reportController;
@@ -50,23 +41,20 @@ public class ReportControllerIT {
 	private WireMockServer patientMock;
 	private WireMockServer notesMock;
 	
-	// faire 2 serveurs à la main pour ne pas planter un single serveur avec 2 appels
 	@BeforeEach
 	void setUp() {
-	patientMock = new WireMockServer(8090);
-	notesMock = new WireMockServer(8091);
-	
-	patientMock.start();
-	notesMock.start();
+		patientMock = new WireMockServer(8090);
+		notesMock = new WireMockServer(8091);
+		
+		patientMock.start();
+		notesMock.start();
 	}
 	
 	@AfterEach
 	void tearDown() {
-	patientMock.stop();
-	notesMock.stop();
+		patientMock.stop();
+		notesMock.stop();
 	}
-	
-	// [https://www.baeldung.com/spring-boot-wiremock](https://www.baeldung.com/spring-boot-wiremock)
 	
 	
 	@Test
@@ -87,7 +75,7 @@ public class ReportControllerIT {
 		notesMock.stubFor(get("/notes/" + patientUuid + "/report-info").willReturn(okJson(mockNotesJson)));
 		
 		webTestClient.get()
-			.uri("/api/report/{patientUuid}", patientUuid) // rutilise rune uri relative (port random) - spring utilise automatiquelent le servue rlancé
+			.uri("/api/report/{patientUuid}", patientUuid) 
 			.accept(MediaType.APPLICATION_JSON)
 			.header("Authorization", "basictoken")
 			.exchange()

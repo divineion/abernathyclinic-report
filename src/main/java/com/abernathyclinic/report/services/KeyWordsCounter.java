@@ -14,7 +14,6 @@ public class KeyWordsCounter {
 		this.keyWordsReader = keyWordsReader;
 	}
 	
-	// compter le nombre de mots-clés par note		
 		Mono<Integer> countKeyWords(NoteContentDto note) {
 			return keyWordsReader.keyWords()
 		    	.filter(keyword -> note.content().toLowerCase().contains(keyword.toLowerCase()))
