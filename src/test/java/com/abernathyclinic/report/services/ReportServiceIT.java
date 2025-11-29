@@ -1,6 +1,5 @@
 package com.abernathyclinic.report.services;
 
-
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
@@ -22,9 +21,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-// entrée : un patient + série de notes
-// sortie : un Mono de reportDTO qui contient une string pour le nv de risk
-// pas d'annotation @SpringBootTest puisqu'il n'y a plus d'injectiona utomatique, tout est créé dans la nouvelle mtehode @BeforeEach
 @ExtendWith(MockitoExtension.class)
 public class ReportServiceIT {
 	@InjectMocks
@@ -45,16 +41,13 @@ public class ReportServiceIT {
 	
 	@BeforeEach
     void setUp() {
-        // créer le KeyWordsCounter avec le mock
         keyWordsCounter = new KeyWordsCounter(keyWordsReader);
         timeService = new TimeService(Clock.fixed(Instant.parse("2025-11-17T00:00:00Z"), ZoneId.of("UTC")));
         riskCalculator = new RiskCalculator(timeService);
 
-        // puis leservice avec le KeyWordsCounter et le RiskCalculator mock
         service = new ReportService(riskCalculator, keyWordsCounter);
     }
 	
-	// 0 - 1 mots
 	@Test
 	void testGenerateReport_shouldReturnNone_whenPatientHasLessThanTwoKeyWords() {
 		// Arrange		
@@ -62,7 +55,6 @@ public class ReportServiceIT {
 		Flux<NoteContentDto> note = Flux.just(new NoteContentDto(
 				"Tout est normal, absence de douleur"));
 		
-		// mock du KeyWordsReader -> retourne les mots-clés quon veut
         when(keyWordsReader.keyWords()).thenReturn(Flux.just("douleur", "diabète", "anormal"));		
 
 		// Act
@@ -75,7 +67,6 @@ public class ReportServiceIT {
 			.verifyComplete();
 	}
 	
-	// entre 2 et 5 termes âge > 30 ans
 	@Test
 	void testGenerateReport_shouldReturn_BorderlinewhenTwoToFiveKeywordsAndAgeOver30() {
 		Mono<PatientProfileDto> patientInfos = Mono.just(new PatientProfileDto("M", "1945-06-24"));
@@ -94,9 +85,6 @@ public class ReportServiceIT {
 
 	}
 	
-	
-	// h <= 30 : 3 termes ; f <= 30 ans : 4 termes
-	// h > 30 : 6 termes ; f > 30 : 7 terles
 	@Test
 	void testGenerateReport_shouldReturn_InDanger_whenMaleUnder30WithThreeKeywords() {
 		Mono<PatientProfileDto> patientInfos = Mono.just(new PatientProfileDto("M", "2004-06-18"));
@@ -118,7 +106,6 @@ public class ReportServiceIT {
 
 	}
 	
-	// femme <= 30 ans, 4 mots 
     @Test
     void testGenerateReport_shouldReturnInDanger_whenFemaleUnder30WithFourKeywords() {
         Mono<PatientProfileDto> patient = Mono.just(new PatientProfileDto("F", "2000-03-12"));
@@ -134,9 +121,6 @@ public class ReportServiceIT {
                     .expectNext("IN_DANGER")
                     .verifyComplete();
     }
-	
-	// h <= 30 : 5 termes ; f <= 30 ans : 7 termes
-	//  > 30 : au moins8 termes
 	
 	@Test
 	void testGenerateReport_shouldReturnEarlyOnset_whenMaleOver30WithEightOrMoreKeywords() {

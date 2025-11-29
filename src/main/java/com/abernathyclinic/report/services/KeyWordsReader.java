@@ -28,9 +28,6 @@ public class KeyWordsReader {
 
     @PostConstruct
     public void readData() {
-    	// https://www.baeldung.com/java-getresourceasstream-vs-fileinputstream
-    	// This method is commonly used to read configuration files, properties files, and other resources packaged with the application.
-    	// fonctionne en dev comme dans un JAR
         try (InputStream inputStream = getClass().getResourceAsStream("/data/risk-keywords.json")) {
         	
         	if (inputStream == null) {
