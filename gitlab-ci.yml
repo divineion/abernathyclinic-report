@@ -1,0 +1,56 @@
+image: maven:3.9.10-eclipse-temurin-24-alpine
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  SPRING_PROFILES_ACTIVE: test
+
+stages:
+  - build
+  - test
+  - package
+  - image
+
+cache:
+  paths:
+    - .m2/repository
+  key: "$CI_COMMIT_REF_SLUG"
+
+# Build du projet
+build-report-job:
+  stage: build
+  script:
+    - |
+      mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository \
+      -Dspring.profiles.active=test \
+      compile \
+      --batch-mode --errors --fail-at-end --show-version
+
+# Tests unitaires
+test-report-job:
+  stage: test
+  script:
+    - mvn test
+
+# Création du JAR
+package-job:
+  stage: package
+  script:
+    - mvn package --batch-mode --fail-at-end
+  artifacts:
+    paths:
+      - target/*.jar
+    name: "microservice-report-jar-artifacts"
+
+# Build et push de l'image Docker
+image-job:
+  stage: image
+  image: docker:latest
+  services:
+    - docker:dind
+  dependencies:
+    - package-job
+  before_script:
+    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  script:
+    - docker build -t divineion/microservice-report:$CI_COMMIT_REF_SLUG .
+    - docker push divineion/microservice-report:$CI_COMMIT_REF_SLUG
