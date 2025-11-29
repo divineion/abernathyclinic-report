@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.7</version>
+		<version>3.5.8</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.abernathyclinic</groupId>
@@ -45,6 +45,16 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.wiremock.integrations/wiremock-spring-boot
+		mcocker les micro-services -->
+		<dependency>
+		    <groupId>org.wiremock.integrations</groupId>
+		    <artifactId>wiremock-spring-boot</artifactId>
+		    <version>4.0.8</version>
+		    <scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
@@ -53,6 +63,71 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			
+			<!-- pb absence rapport : assurer que le code est bien compilé avant d'exécuter les tests -->
+			<plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-compiler-plugin</artifactId>
+		    </plugin>
+			
+			<plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-failsafe-plugin</artifactId>
+	            <!-- Configurer Failsafe pour qu’il exécute uniquement les *IT.java -->
+	            <configuration>
+			        <includes>
+			            <include>**/*IT.java</include>
+			        </includes>
+			    </configuration>
+			    <executions>
+			        <execution>
+			            <id>integration-tests</id>
+			            <goals>
+			                <goal>integration-test</goal>
+			                <goal>verify</goal>
+			            </goals>
+			        </execution>
+			    </executions>
+	            
+	            <dependencies>
+	                <dependency>
+	                    <groupId>org.junit.jupiter</groupId>
+	                    <artifactId>junit-jupiter-engine</artifactId>
+	                    <version>5.9.1</version>
+	                </dependency>
+	            </dependencies>
+	        </plugin>
+			
+			<plugin>
+			    <artifactId>maven-surefire-plugin</artifactId>
+			    <configuration>
+			        <excludes>
+			            <exclude>**/*IT.java</exclude>
+			        </excludes>
+			    </configuration>
+			</plugin>
+		
+			<plugin>
+	            <groupId>org.jacoco</groupId>
+	            <artifactId>jacoco-maven-plugin</artifactId>
+	            <version>0.8.13</version>
+	            <executions>
+	                <execution>
+	                    <id>jacoco-initialize</id>
+	                    <goals>
+	                        <goal>prepare-agent</goal>
+	                    </goals>
+	                </execution>
+	                <execution>
+	                    <id>jacoco-site</id>
+	                    <phase>verify</phase>
+	                    <goals>
+	                        <goal>report</goal>
+	                    </goals>
+	                </execution>
+	            </executions>
+	        </plugin>
+			
 		</plugins>
 	</build>
 
