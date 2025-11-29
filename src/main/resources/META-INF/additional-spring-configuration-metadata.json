@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "notes.service.url",
+    "type": "java.lang.String",
+    "description": "Microservice Notes URL"
+  },
+  {
+    "name": "patient.service.url",
+    "type": "java.lang.String",
+    "description": "Microservice Patient URL"
+  }
+]}
